@@ -1,3 +1,4 @@
+#include "shell.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,6 +13,9 @@ void prompt() {
 
 int main(void) {
     pid_t pid;
+    char **argv;
+    int argc;
+    char *token;
     char **envp;
     char *buffer;
     size_t bufsize = BUFSIZE;
@@ -44,16 +48,22 @@ int main(void) {
         }
 
         if (pid == 0) {
-            char **argv = malloc(sizeof(char *) * 2); /* Allocate memory for argv*/
+            argv = malloc(sizeof(char *) * (strlen(buffer) + 1)); /* Allocate memory for argv */
             if (argv == NULL) {
                 perror("malloc");
                 exit(EXIT_FAILURE);
             }
-            argv[0] = buffer; /* First argument is the command*/
-            argv[1] = NULL; /* Null-terminate the array*/
 
-            envp = NULL;
-            if (execve(buffer, argv, envp) == -1) {
+            argc = 0;
+            token = strtok(buffer, " "); /* Tokenize the command line */
+            while (token != NULL) {
+                argv[argc++] = token;
+                token = strtok(NULL, " ");
+            }
+            argv[argc] = NULL; /* Null-terminate the array */
+
+            envp = NULL; /* Environment variables array */
+            if (execve(argv[0], argv, envp) == -1) {
                 perror("execve");
                 exit(EXIT_FAILURE);
             }
