@@ -1,29 +1,41 @@
 #include "shell.h"
-/**
- * execute_command - Execute a command with the given arguments
- * @args: Array of strings containing the command and its arguments
- */
-void execute_command(char **args)
-{
-	pid_t pid = fork();
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-	if (pid < 0)
-	{
-		perror("fork");
-		exit(EXIT_FAILURE);
-	}
-	else if (pid == 0)
-	{
-		/* Child process */
-		if (execvp(args[0], args) == -1)
-		{
-			perror(args[0]);
-			exit(EXIT_FAILURE);
-		}
-	}
-	else
-	{
-		/* Parent process */
-		wait(NULL);
-	}
+/**
+ * execute_command - Executes the given command.
+ * @command: The command to execute.
+ *
+ * Return: 0 on success, -1 on failure.
+ */
+int execute_command(char *command)
+{
+    char **argv;
+    char *const envp[] = {NULL};
+
+    /* Allocate memory for argv */
+    argv = malloc(2 * sizeof(char *));
+    if (argv == NULL)
+    {
+        perror("malloc");
+        return (-1);
+    }
+
+    /* Set command as the first argument */
+    argv[0] = command;
+    argv[1] = NULL;
+
+    /* Execute command using execve */
+    if (execve(command, argv, envp) == -1)
+    {
+        perror("execve");
+        free(argv);  /* Free dynamically allocated memory */
+        return (-1);
+    }
+
+    /* Free dynamically allocated memory */
+    free(argv);
+
+    return (0);
 }
