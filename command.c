@@ -5,39 +5,37 @@
  * @command: The command to execute
  *
  */
-void execute_command(char *command)
-{
-	if (is_builtin_command(command))
-	{
-		execute_builtin_command(command);
-	}
-	else
-	{
-		char *resolved_path = resolve_path(command);
+#include "shell.h"
 
-		if (resolved_path != NULL)
-		{
-			pid_t pid = fork();
+void execute_command(char *command) {
+    if (is_builtin_command(command)) {
+        execute_builtin_command(command);
+    } else {
+        char *resolved_path = resolve_path(command);
 
-			if (pid == -1)
-			{
-				error_handler("fork");
-			}
-			else if (pid == 0)
-			{
-				char **args = parse_arguments(command);
+        if (resolved_path != NULL) {
+            pid_t pid = fork();
 
-				execve(resolved_path, args, NULL);
-				error_handler(command);
-				exit(EXIT_FAILURE);
-			}
-			else
-			{
-				wait(NULL);
-			}
-			free(resolved_path);
-		}
-	}
+            if (pid == -1) {
+                error_handler("fork");
+            } else if (pid == 0) {
+                char **args = parse_arguments(command);
+
+                execve(resolved_path, args, NULL);
+                /* execve only returns if an error occurs */
+                error_handler(command);
+                exit(EXIT_FAILURE);
+            } else {
+                /* Parent process */
+                int status;
+                waitpid(pid, &status, 0);
+                if (!WIFEXITED(status)) {
+                    fprintf(stderr, "Error: Child process terminated abnormally\n");
+                }
+            }
+            free(resolved_path);
+        }
+    }
 }
 
 /**
