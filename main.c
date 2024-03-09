@@ -5,20 +5,57 @@
 int main(void)
 {
     char *line;
-    char **args;
+    size_t bufsize;
     int status;
 
-    do
+    pid_t pid;
+
+    while (1)
     {
-        printf("($) ");
-        line = read_line();
-        args = parse_line(line);
-        status = execute_command(args);
+        printf("#cisfun$ ");
+        line = NULL;
+        bufsize = 0;
+        if (getline(&line, &bufsize, stdin) == -1)
+        {
+            if (feof(stdin))
+            {
+                printf("\n");
+                free(line);
+                exit(EXIT_SUCCESS);
+            }
+            else
+            {
+                perror("getline");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        /* Remove trailing newline character */
+        line[strcspn(line, "\n")] = '\0';
+
+        pid = fork();
+        if (pid == -1)
+        {
+            perror("fork");
+            exit(EXIT_FAILURE);
+        }
+        else if (pid == 0)
+        {
+            /* Child process */
+            if (execlp(line, line, NULL) == -1)
+            {
+                perror("execlp");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else
+        {
+            /* Parent process */
+            waitpid(pid, &status, 0);
+        }
 
         free(line);
-        free_args(args);
     }
-    while (status);
 
-    return (EXIT_SUCCESS);
+    return (0);
 }

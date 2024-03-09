@@ -5,12 +5,13 @@
  */
 int execute_command(char **args)
 {
-    int status;
-    pid_t pid;
+	int status;
 
-    pid = fork();
-    if (pid == 0)
-    {
+	pid_t pid;
+	pid = fork();
+
+	if (pid == 0)
+	{
         /* Child process */
         if (execvp(args[0], args) == -1)
         {
