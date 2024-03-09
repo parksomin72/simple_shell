@@ -2,6 +2,7 @@
 #define _SHELL_H_
 
 #define BUFFER_SIZE 1024
+#define DELIMITER " \t\r\n\a"
 /* header */
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +12,8 @@
 /** Function declarations **/
 char *read_line(void);
 char **parse_line(char *line);
-int execute_command(char **args);
+void execute_command(char **args);
 void free_args(char **args);
+char **tokenize_input(char *line);
 
 #endif /*SHELL_H*/

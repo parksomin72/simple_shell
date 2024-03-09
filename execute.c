@@ -1,34 +1,31 @@
 #include "shell.h"
 
 /**
- * Function to execute a command
+ * Function to execute a command.
  */
-int execute_command(char **args)
+void execute_command(char **args)
 {
-	int status;
+    pid_t pid;
+    int status;
 
-	pid_t pid;
-	pid = fork();
-
-	if (pid == 0)
-	{
+    pid = fork();
+    if (pid == -1)
+    {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+    else if (pid == 0)
+    {
         /* Child process */
         if (execvp(args[0], args) == -1)
         {
             perror("execvp");
+            exit(EXIT_FAILURE);
         }
-        exit(EXIT_FAILURE);
-    }
-    else if (pid < 0)
-    {
-        /* Error forking */
-        perror("fork");
     }
     else
     {
         /* Parent process */
-        waitpid(pid, &status, WUNTRACED);
+        waitpid(pid, &status, 0);
     }
-
-    return (1);
 }
