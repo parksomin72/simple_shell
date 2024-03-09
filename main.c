@@ -1,5 +1,8 @@
 #include "shell.h"
-
+/**
+ * main - Entry point
+ * Return: always 0 (seccuss)
+ */
 int main(void)
 {
 	char *command;

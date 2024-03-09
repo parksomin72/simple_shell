@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+extern char **environ;
 /* Function prototypes*/
 void display_prompt();
 char *read_command();
