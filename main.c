@@ -1,58 +1,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
 #include <sys/wait.h>
 
-#define MAX_COMMAND_LENGTH 100
+#define BUFFER_SIZE 1024
 
-int main()
-{
-    char command[MAX_COMMAND_LENGTH];
-    pid_t pid;
+int main(void) {
+    char buffer[BUFFER_SIZE];
+    ssize_t read_bytes;
+    pid_t child_pid;
+    int status;
+    char *envp[] = {NULL};
 
-    while (1)
-    {
+    while (1) {
         printf("#cisfun$ ");
-        fflush(stdout);
-
-        /* Read command from user */
-        if (fgets(command, sizeof(command), stdin) == NULL)
-	{
-            /* Handling Ctrl+D (end of file) */
+        read_bytes = read(STDIN_FILENO, buffer, BUFFER_SIZE);
+        if (read_bytes == -1) {
+            perror("read");
+            exit(EXIT_FAILURE);
+        }
+        if (read_bytes == 0) {
             printf("\n");
             break;
         }
-
-        /* Remove trailing newline character */
-        command[strcspn(command, "\n")] = 0;
-
-        /* Fork a child process */
-        pid = fork();
-
-        if (pid == -1)
-	{
-            /* Fork failed */
+        buffer[read_bytes - 1] = '\0';
+        
+        child_pid = fork();
+        if (child_pid == -1) {
             perror("fork");
             exit(EXIT_FAILURE);
         }
-	else if (pid == 0)
-	{
-            /* Child process */
-            /* Execute the command */
-            if (execlp(command, command, (char *)NULL) == -1) {
-                /* If exec fails, print error */
-                printf("%s: command not found\n", command);
+        if (child_pid == 0) {
+            char *args[2];
+            args[0] = buffer;
+            args[1] = NULL;
+            if (execve(buffer, args, envp) == -1) {
+                perror("execve");
                 exit(EXIT_FAILURE);
             }
-        }
-	else
-	{
-            /* Parent process */
-            /* Wait for child to terminate */
-            wait(NULL);
+        } else {
+            wait(&status);
         }
     }
 
-    return (0);
+    return (EXIT_SUCCESS);
 }
