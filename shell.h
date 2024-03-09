@@ -12,9 +12,11 @@
 /** Function declarations **/
 char *read_line(void);
 char **parse_line(char *line);
-void execute_command(char **args);
+/*void execute_command(char **args);*/
 void free_args(char **args);
 char **tokenize_input(char *line);
 int compare_strings(const void *a, const void *b);
-
+void read_command(char *buffer, size_t size);
+void display_prompt();
+void execute_command(char *command);
 #endif /*SHELL_H*/
